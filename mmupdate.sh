@@ -9,7 +9,7 @@
 # Copyright (c) 2020 Creamsand
 # Original https://github.com/hobbyquaker/mattermost-update by Sebastian Raff <hq@ccu.io> 
 
-VERSION="2.0.2_custom"
+VERSION="2.0.3_custom"
 
 MM_PATH=$1
 TARBALL_URL=$2
@@ -76,7 +76,8 @@ DRIVER_NAME=`echo ${SQL_SETTINGS} | jq -r '.DriverName'`
 
 if [ ${DRIVER_NAME} == "postgres" ]; then
     DATA_SOURCE=`echo ${SQL_SETTINGS} | jq -r '.DataSource'`
-    DB_NAME=`echo ${DATA_SOURCE} | sed -r 's#.*\/\/([^?]+).*#\1#'`
+    # DB_NAME=`echo ${DATA_SOURCE} | sed -r 's#.*\/\/([^?]+).*#\1#'`
+    DB_NAME=`echo ${DATA_SOURCE} | sed -e 's/\?.*//' | awk '{print substr($0, index($0, "/"))}' | cut -c 2-`
     DB_DUMP_FILE=${BACKUP_TMP_PATH}/${DB_NAME}.pgdump.gz
 
     echo "   Dumping $DRIVER_NAME Database $DB_NAME to $DB_DUMP_FILE"
@@ -85,8 +86,9 @@ if [ ${DRIVER_NAME} == "postgres" ]; then
 
 elif [ ${DRIVER_NAME} == "mysql" ]; then # MySQL,MariaDBはこれ
     DATA_SOURCE=`echo ${SQL_SETTINGS} | jq -r '.DataSource'`
-    DB_NAME=`echo ${DATA_SOURCE} | sed -r 's#.*\/\/([^?]+).*#\1#'`
-    DB_DUMP_FILE=${BACKUP_TMP_PATH}/${DB_NAME}.pgdump.gz
+    # DB_NAME=`echo ${DATA_SOURCE} | sed -r 's#.*\/\/([^?]+).*#\1#'`
+    DB_NAME=`echo ${DATA_SOURCE} | sed -e 's/\?.*//' | awk '{print substr($0, index($0, "/"))}' | cut -c 2-`
+    DB_DUMP_FILE="${BACKUP_TMP_PATH}/${DB_NAME}.mysqldump.gz"
 
     echo "   Dumping $DRIVER_NAME Database $DB_NAME to $DB_DUMP_FILE"
     cd ${MM_PATH}
